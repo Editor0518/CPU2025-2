@@ -24,12 +24,15 @@ CLUSTER_SIDS = {
     "AD": ["ADA", "ADB", "ADC", "ADD"],
     "AC": ["ACA", "ACB", "ACC"],
     "AB": ["ABA", "ABB", "ABC"],
-    "AA": ["AAA", "AAB", "AAC"]
+    "AA": ["AAA", "AAB", "AAC"],
+    "GA": ["GAN"]
 }
 
 # 텍스트 조건 판별 함수
 def match_condition(text, sid):
-    if sid == "AEB":
+    if sid == "GAN":
+        return any(w in text for w in ["적대적", "GAN", "Generative Adversarial Network"])
+    elif sid == "AEB":
         return ("테스트" in text or "훈련용" in text) and "생성" in text
     elif sid == "ADD":
         group1 = ("잡음" in text or "노이즈" in text) and any(w in text for w in ["음성", "음악", "소리"]) and "제거" in text
@@ -65,19 +68,23 @@ def match_condition(text, sid):
         return "멀티모달" in text or "멀티 모달" in text
     elif sid == "AEC":
         return any(w in text for w in ["3d", "3차원", "다각도"])
+    #elif sid == "AED":
+    #    return "시나리오" in text and "시뮬레이션" in text and "예측" in text
     elif sid == "AED":
-        return "시나리오" in text
+        return any(w in text for w in ["시나리오", "시뮬레이션", "예측"])
+
     elif sid == "ADA":
         return any(w in text for w in ["음성", "voice"])
     elif sid == "ADB":
         return any(w in text for w in ["음악", "music"])
     elif sid == "ADC":
         return any(w in text for w in ["소리", "environmental sound", "환경음"])
+   
     else:
         return False
 
 # 클러스터링 수행
-for mid in ["AE", "AD", "AC", "AB", "AA"]:
+for mid in ["AE", "AD", "AC", "AB", "AA", "GA"]:
     for sid in CLUSTER_SIDS[mid]:
         mask = df['merged_text'].apply(lambda text: match_condition(text, sid)) & (~df['id'].isin(assigned_ids))
         matched = df[mask]

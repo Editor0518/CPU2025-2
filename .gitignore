@@ -24,6 +24,10 @@ pretrained/
 patent-data/
 *.pkl
 
+# access keys
+access_token.txt
+apiKey.txt
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
