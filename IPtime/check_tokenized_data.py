@@ -5,7 +5,7 @@ import os
 def check_tokenized_data():
     """토크나이징된 특허 데이터 확인"""
     
-    pkl_file = "patents_tokenized.pkl"
+    pkl_file = "patents_tokenized_with_embeddings.pkl"
     
     if not os.path.exists(pkl_file):
         print(f"파일이 없습니다: {pkl_file}")

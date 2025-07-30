@@ -7,7 +7,7 @@ from pathlib import Path
 def fetch_patents(
     search_word: str,
     year_to_search: str = '0',
-    api_key_path: str = './apiKey.txt',
+    api_key_path: str = './apiKey.txt', #KIPRIS API 키 파일 경로
     output_tsv: str = './patent-data/patents_for_bert.tsv',
     rows_per_page: int = 10,
     withdrawn: bool = False

@@ -6,7 +6,8 @@ from gensim.models import TfidfModel, LdaModel
 
 # 데이터 로드 및 확인
 try:
-    df = pd.read_pickle("patents_tokenized_with_embeddings.pkl")
+    #_with_embeddings
+    df = pd.read_pickle("patents_tokenized.pkl")
     print(f"임베딩 데이터 로드: {len(df)}건")
 except FileNotFoundError:
     df = pd.read_pickle("patents_tokenized.pkl")

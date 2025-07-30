@@ -5,7 +5,7 @@ import json
 from patent_fetcher import fetch_patents
 from korpat_tokenizer import Tokenizer
 
-print("키프리스 특허 데이터 수집 및 토크나이징 프로그램")
+print("KIPRIS 특허 데이터 수집 및 토크나이징 프로그램")
 
 # KorPatBERT 토크나이저 초기화
 vocab_path = "./pretrained/korpat_vocab.txt"

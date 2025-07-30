@@ -1,0 +1,158 @@
+import pandas as pd
+
+mapping_dict = {
+    "SAMSUNG ELECTRONICS": "SAMSUNG ELECTRONICS",
+    "삼성전자주식회사": "SAMSUNG ELECTRONICS",
+    "SAMSUNG ELECTRONICS CO., LTD.": "SAMSUNG ELECTRONICS",
+    "Samsung Electronics Co., Ltd.": "SAMSUNG ELECTRONICS",
+    "SAMSUNG ELECTRONICS CO LTD": "SAMSUNG ELECTRONICS",
+    "SAMSUNG ELECTRONICS CO., LTD. | KOREA ADVANCED INSTITUTE OF SCIENCE AND TECHNOLOGY": "SAMSUNG ELECTRONICS",
+    "SAMSUNG ELECTRONICS CO, LTD.": "SAMSUNG ELECTRONICS",
+    "SAMSUNG ELECTRONICS CO.": "SAMSUNG ELECTRONICS",
+    "삼성전자주식회사 | 서울대학교산학협력단": "SAMSUNG ELECTRONICS",
+    "삼성전자주식회사 | 한국과학기술원": "SAMSUNG ELECTRONICS",
+    "SAMSUNG ELECTRONICS CO., LTD. | SEOUL NATIONAL UNIVERSITY R&DB FOUNDATION": "SAMSUNG ELECTRONICS",
+    "SAMSUNG ELECTRONICS CO., LTD. | KOREA UNIVERSITY": "SAMSUNG ELECTRONICS",
+    
+    "LG ELECTRONICS": "LG ELECTRONICS",
+    "엘지전자 주식회사": "LG ELECTRONICS",
+    "LG ELECTRONICS INC.": "LG ELECTRONICS",
+    
+    "MICROSOFT": "MICROSOFT",
+    "Microsoft Technology Licensing, LLC": "MICROSOFT",
+    "MICROSOFT TECHNOLOGY LICENSING, LLC": "MICROSOFT",
+    "Microsoft Corporation": "MICROSOFT",
+    "MICROSOFT CORPORATION": "MICROSOFT",
+    "MICROSOFT TECHNOLOGY LICENSING LLC": "MICROSOFT",
+    "Microsoft Technology Licensing LLC": "MICROSOFT",
+    
+    "IBM": "IBM",
+    "International Business Machines Corporation": "IBM",
+    "INTERNATIONAL BUSINESS MACHINES CORPORATION": "IBM",
+    "IBM CORPORATION": "IBM",
+    "INTERNATIONAL BUSINESS MASCHINES CORPORATION(IBM)": "IBM",
+    
+    "INTEL CORP": "Intel Corporation",
+    
+    "SIMPLE INTELLIGENCE, INC.":"Simple Intelligence, Inc.",
+    
+    "NVIDIA Corporation": "NVIDIA",
+    "NVIDIA CORPORATION": "NVIDIA",
+    "NVIDIA CORP": "NVIDIA",
+    
+    "State Farm Mutual Automobile Insurance Company": "STATE FARM",
+    
+    "Wix.com Ltd.": "WIX COM LTD",
+    
+    "GOOGLE LLC": "GOOGLE",
+    "Google LLC": "GOOGLE",
+    "GOOGLE INC.": "GOOGLE",
+    
+    "BANK OF AMERICA CORPORATION": "BANK OF AMERICA",
+    
+    "ORACLE INTERNATL CORP": "ORACLE",
+    "Oracle International Corporation": "ORACLE",
+    "ORACLE CORPORATION": "ORACLE",
+    
+    "Mayo Foundation for Medical Education and Research":"MAYO FOUNDATION FOR MEDICAL EDUCATION AND RESEARCH",
+    
+    "ACCENTURE GLOBAL SOLUTIONS LIMITED": "ACCENTURE",
+    
+    "TENCENT": "TENCENT",
+    "TENCENT TECH SHENZHEN CO LTD": "TENCENT",
+    "TENCENT TECHNOLOGY (SHENZHEN) COMPANY LIMITED": "TENCENT",
+    "TENCENT TECH BEIJING CO LTD": "TENCENT",
+    "Tencent Technology (Shenzhen) Company Limited": "TENCENT",
+    "TENCENT TECH SHANGHAI CO LTD": "TENCENT",
+    "SHENZHEN TENCENT COMPUTER SYSTEMS CO LTD": "TENCENT",
+    "TENCENT TECH SHENZHEN CO LTD | UNIV CHINESE HONG KONG SHENZHEN": "TENCENT",
+    "TENCENT TECH SHENZHEN CO LTD | UNIV HONG KONG POLYTECHNIC": "TENCENT",
+    "TENCENT TECHNOLOGY (SHENZHEN) COMPANY LIMITED": "TENCENT",
+    "TENCENT TECH SHENZHEN CO LTD | UNIV BEIJING JIAOTONG": "TENCENT",
+    "TENCENT TECH SHENZHEN CO LTD | UNIV TSINGHUA": "TENCENT",
+    "TENCENT TECH SHENZHEN CO LTD | UNIV ":"TENCENT",
+    
+    "AUTODESK, INC.": "AUTODESK",
+    "Autodesk, Inc.": "AUTODESK",
+    "AUTODESK INC": "AUTODESK",
+    
+    "DocuSign, Inc.": "DOCUSIGN",
+    "DOCUSIGN, INC.": "DOCUSIGN",
+    
+    "BAIDU": "BAIDU",
+    "BEIJING BAIDU NETCOM SCI & TECH CO LTD": "BAIDU",
+    "BEIJING BAIDU NETCOM SCI & TEC": "BAIDU",
+    "BEIJING BAIDU NETCOM SCIENCE & TECHNOLOGY CO LTD": "BAIDU",
+    "BEIJING BAIDU NETCOM SCIENCE & TECHNOLOGY CO., LTD.": "BAIDU",
+    "BAIDU INTERNATIONAL TECH SHENZHEN CO LTD": "BAIDU",
+    "BEIJING BAIDU NETCOM SCIENCE TECHNOLOGY CO LTD": "BAIDU",
+    "Beijing Baidu Netcom Science and Technology Co., Ltd": "BAIDU",
+    "BAIDU ONLINE NETWORK TECHNOLOGY BEIJING CO LTD": "BAIDU",
+    "BAIDU CHINA CO LTD": "BAIDU",
+    "BEIJING BAIDU NETCOM SCIENCE TECHNOLOGY CO., LTD.": "BAIDU",
+    
+    "AMAZON": "AMAZON",
+    "Amazon Technologies, Inc.": "AMAZON",
+    "AMAZON TECHNOLOGIES, INC.": "AMAZON",
+    
+    "ADOBE": "ADOBE",
+    "Adobe Inc.": "ADOBE",
+    "ADOBE SYSTEMS INC": "ADOBE",
+    "ADOBE INC.": "ADOBE", 
+    
+    "SOFTBANK": "SOFTBANK",
+    "SOFUTO BANKU KK": "SOFTBANK",
+    
+    "BANK OF AMERICA": "BANK OF AMERICA",
+    "Bank of America Corporation": "BANK OF AMERICA",
+    
+    "JP MORGAN": "JP MORGAN",
+    "JPMorgan Chase Bank, N.A.": "JP MORGAN",
+    
+    "ACCENTURE": "ACCENTURE",
+    "Accenture Global Solutions Limited": "ACCENTURE",
+    "ACCENTURE GLOBAL SOLUTIONS LTD": "ACCENTURE",
+    
+    "STATE FARM": "STATE FARM",
+    "STATE FARM MUTUAL AUTOMOBILE INSURANCE COMPANY": "STATE FARM",
+    
+    "INFINIQ": "INFINIQ",
+    "INFINIQ CO., LTD.": "INFINIQ",
+    "INFINIQ INC.": "INFINIQ",
+    "주식회사 인피닉": "INFINIQ",
+    
+    "PAYPAL, INC.": "PAYPAL",
+    "PayPal, Inc.": "PAYPAL",
+    
+    "SRI INTERNATIONAL": "SRI International",
+    
+    "UNIV SOUTHEAST": "SOUTHEAST UNIVERSITY ",
+    "UNIVERSITY OF SOUTHEAST": "SOUTHEAST UNIVERSITY",
+    "Southeast University": "SOUTHEAST UNIVERSITY",
+    "SOUTHEAST UNIVERSITY ": "SOUTHEAST UNIVERSITY",
+    
+    "NAVER Corporation": "NAVER",
+    "NAVER Corporation | LINE 주식회사": "NAVER",
+    "NAVER Corporation | LINE 二쇱떇?뚯궗": "NAVER",
+    "NAVER Corporation | LINE Corporation": "NAVER",
+    
+    "C3.AI, INC.":"C3.ai, Inc.",
+    
+    "SONY COMPUTER ENTERTAINMENT INC" : "SONY",
+    "SONY INTERACTIVE ENTERTAINMENT INC. | KRISHNAMURTHY, Sudha":"SONY",
+    "Sony Interactive Entertainment Inc.":"SONY",
+    "Sony Interactive Entertainment Inc.": "SONY",
+    "SONY INTERACTIVE ENTERTAINMENT INC. | BENEDETTO, Warren":"SONY",
+    "SONY CO": "SONY",
+    "SONY CO | SONY CORP OF AMERICA": "SONY",
+    "SONY GROUP CORPORATION": "SONY",
+    "Sony Interactive Entertainment LLC": "SONY",
+    
+    "Sung Ki LIM | Myung Ki LIM": "Sung Ki LIM",
+    "LIM, Sung Ki": "Sung Ki LIM",
+}
+
+# 저장
+mapping_df = pd.DataFrame(mapping_dict.items(), columns=['raw_name', 'normalized_name'])
+mapping_df.to_csv("manual_mapping.csv", index=False)
+print("✅ manual_mapping.csv 파일 저장 완료")
