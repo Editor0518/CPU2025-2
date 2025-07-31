@@ -17,11 +17,11 @@ tf.config.set_visible_devices([], 'GPU')
 config_path = "./pretrained/korpat_bert_config.json"
 vocab_path = "./pretrained/korpat_vocab.txt"
 checkpoint_path = "./pretrained/model.ckpt-381250"
-csv_path = "modelTraining_fin.csv"
+csv_path = "patent_data_finalN.csv"
 
 MAX_SEQ_LEN = 256
-BATCH_SIZE = 8
-EPOCHS = 5
+BATCH_SIZE = 16
+EPOCHS = 10
 LR = 3e-5
 
 # ===== Tokenizer =====
