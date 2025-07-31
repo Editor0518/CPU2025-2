@@ -23,6 +23,8 @@ electra/
 *.h5
 *.tsv
 *.csv
+*.xlsx
+*.json
 patent-data/
 *.pkl
 
