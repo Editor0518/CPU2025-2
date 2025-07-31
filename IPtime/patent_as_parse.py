@@ -1,11 +1,11 @@
 import pandas as pd
 
 # 파일 경로
-INPUT_CSV = "AS_patent.CSV"
-OUTPUT_XLSX = "출원인별_라벨별_시트분리.xlsx"
+INPUT_CSV = "patent_data_final.CSV"
+OUTPUT_XLSX = "fixed2 라벨별_시트분리.xlsx"
 
 # CSV 불러오기 (인코딩은 실제 파일에 따라 맞춰 주세요)
-df = pd.read_csv(INPUT_CSV, encoding="euc-kr")
+df = pd.read_csv(INPUT_CSV, encoding="cp949")
 
 # label 컬럼이 존재하는지 확인
 if 'label' not in df.columns:

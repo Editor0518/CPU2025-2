@@ -19,10 +19,10 @@ ACCESS_TOKEN_PATH = "access_token.txt"
 MODEL_FOLDER = "./electra"
 REMOTE_MODEL_NAME = "KIPI-ai/KorPatElectra"
 DATA_PATH = "patent_data_finalN.csv"
-MAX_SEQ_LEN = 256
+MAX_SEQ_LEN = 192
 BATCH_SIZE = 16
 EPOCHS = 10
-LR = 3e-5
+LR = 1e-5
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # 액세스 토큰

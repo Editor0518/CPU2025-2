@@ -133,7 +133,6 @@ mapping_dict = {
     
     "NAVER Corporation": "NAVER",
     "NAVER Corporation | LINE 주식회사": "NAVER",
-    "NAVER Corporation | LINE 二쇱떇?뚯궗": "NAVER",
     "NAVER Corporation | LINE Corporation": "NAVER",
     
     "C3.AI, INC.":"C3.ai, Inc.",
@@ -154,5 +153,5 @@ mapping_dict = {
 
 # 저장
 mapping_df = pd.DataFrame(mapping_dict.items(), columns=['raw_name', 'normalized_name'])
-mapping_df.to_csv("manual_mapping.csv", index=False)
+mapping_df.to_csv("manual_mapping.csv", index=False, encoding='utf-8-sig')
 print("✅ manual_mapping.csv 파일 저장 완료")

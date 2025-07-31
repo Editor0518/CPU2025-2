@@ -1,11 +1,8 @@
 # korpatbert_classifier.py
-#pip install tensorflow==2.6
-#pip install keras==2.6
-#pip install bert-for-tf2==0.14.9
-
 
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'  # 경고 메시지 숨기기
+
 import pandas as pd
 import numpy as np
 from tqdm import tqdm
@@ -13,10 +10,9 @@ from korpat_tokenizer import Tokenizer  # PDF 제공 파일
 import tensorflow as tf
 from tensorflow import keras
 #from keras import Dense
+from tensorflow.keras.callbacks import EarlyStopping
 import bert  # pip install bert-for-tf2
 
-# GPU 경고 방지
-tf.config.set_visible_devices([], 'GPU')
 
 # ===== 경로 및 설정 =====
 config_path = "./pretrained/korpat_bert_config.json"
@@ -25,10 +21,10 @@ checkpoint_path = "./pretrained/model.ckpt-381250"
 
 csv_path = "patent_data_finalN.csv"
 
-MAX_SEQ_LEN = 256
-BATCH_SIZE = 16
+MAX_SEQ_LEN = 192
+BATCH_SIZE = 8
 EPOCHS = 10
-LR = 3e-5
+LR = 1e-5
 
 # ===== KorPat Tokenizer 선언 =====
 tokenizer = Tokenizer(vocab_path=vocab_path, cased=True)
@@ -37,6 +33,7 @@ tokenizer = Tokenizer(vocab_path=vocab_path, cased=True)
 df = pd.read_csv(csv_path, encoding="cp949")
 df = df[df['label'].notnull()].copy()
 df["text"] = df["title"].fillna('') + " " + df["korean_summary"].fillna('')
+
 
 # ===== 사용자 정의 라벨 =====
 label_list = [
@@ -87,10 +84,8 @@ label2id = {label: i for i, label in enumerate(labels)}
 id2label = {i: label for label, i in label2id.items()}
 df_filtered["label_id"] = df_filtered["label"].map(label2id)
 
-print(f"\n📋 최종 라벨 맵핑:")
 for i, label in enumerate(labels):
     count = len(df_filtered[df_filtered['label'] == label])
-    print(f"  {i}: {label} ({count}개)")
 
 # ===== 데이터 분리 (이제 안전하게 stratify 사용 가능) =====
 print(f"\n🔄 데이터 분리 시작...")
@@ -151,10 +146,11 @@ val_x, val_y = encode_dataset(val_df)
 test_x, test_y = encode_dataset(test_df)
 
 # ===== 모델 정의 및 학습 =====
+print("\n모델 정의 중...")
 mirrored_strategy = tf.distribute.MirroredStrategy()
 with mirrored_strategy.scope():
     input_ids = keras.layers.Input(shape=(MAX_SEQ_LEN,), dtype='int32')
-
+   
     bert_params = bert.params_from_pretrained_ckpt(os.path.dirname(checkpoint_path))
     l_bert = bert.BertModelLayer.from_params(bert_params, name="bert")
     bert_output = l_bert(input_ids)
@@ -166,20 +162,33 @@ with mirrored_strategy.scope():
     bert.load_stock_weights(l_bert, checkpoint_path)
 
     model.compile(
-        optimizer=keras.optimizers.Adam(learning_rate=LR),
+        optimizer=keras.optimizers.Adam(learning_rate=LR, clipnorm=1.0),
         loss='categorical_crossentropy',
         metrics=['accuracy'],
     )
 
 model.summary()
 
-# ===== 학습 시작 =====
-history = model.fit(
-    train_x, train_y,
-    validation_data=(val_x, val_y),
-    batch_size=BATCH_SIZE,
-    epochs=EPOCHS
+
+early_stop = EarlyStopping(
+    monitor='val_loss',      # validation loss 기준으로 감시
+    patience=2,              # 개선 안 되는 epoch 수 (ex: 2번 연속)
+    restore_best_weights=True  # 가장 좋은 성능의 가중치 복원
 )
+
+# ===== 학습 시작 =====
+print("\n📚 모델 학습 시작...")
+try:
+    history = model.fit(
+        train_x, train_y,
+        validation_data=(val_x, val_y),
+        batch_size=BATCH_SIZE,
+        epochs=EPOCHS,
+        callbacks=[early_stop],
+        verbose=1
+    )
+except Exception as e:
+    print("❌ 학습 중 오류 발생:", e)
 
 # ===== 평가 및 저장 =====
 model.save("korpatBERT_patent_model.h5")
