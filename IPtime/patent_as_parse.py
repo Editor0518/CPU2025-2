@@ -4,6 +4,9 @@ import pandas as pd
 INPUT_CSV = "patent_data_final.CSV"
 OUTPUT_XLSX = "fixed2 라벨별_시트분리.xlsx"
 
+INPUT_CSV = "기술흐름도용.CSV"
+OUTPUT_XLSX = "기술흐름도용.xlsx"
+
 # CSV 불러오기 (인코딩은 실제 파일에 따라 맞춰 주세요)
 df = pd.read_csv(INPUT_CSV, encoding="cp949")
 

@@ -27,15 +27,15 @@ tokenizer = Tokenizer(vocab_path=vocab_path, cased=True)
 df = pd.read_csv(csv_path, encoding="cp949")
 df = df[df['label'].notnull()].copy()
 df["text"] = df["title"].fillna('') + " " + df["korean_summary"].fillna('')
-df["is_noise"] = df["label"].apply(lambda x: 1 if x == 'N' else 0)
+df["is_noise"] = df["label"].apply(lambda x: 1 if x != 'N' else 0)
 
 # ===== 라벨 개수 출력 =====
-num_noise = df["is_noise"].sum()
-num_clean = len(df) - num_noise
-print(f"\n📊 전체 데이터 수: {len(df)}")
-print(f"  - 노이즈(N) 수: {num_noise}")
-print(f"  - 정상 데이터 수: {num_clean}")
+num_clean = df["is_noise"].sum()
+num_noise = len(df) - num_clean
 
+print(f"\n📊 전체 데이터 수: {len(df)}")
+print(f"  - 정상 데이터 수: {num_clean}")
+print(f"  - 노이즈(N) 수: {num_noise}")
 
 # ===== 데이터 분리 =====
 train_df, test_df = train_test_split(df, test_size=0.1, stratify=df["is_noise"], random_state=42)

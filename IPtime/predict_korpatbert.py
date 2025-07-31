@@ -54,19 +54,23 @@ def encode_texts(texts):
 # ===== 예측 함수 =====
 def predict_labels(model, x_data, task_type, label_list):
     preds = model.predict(x_data)
-    
+
     pred_labels = []
     pred_probs = []
 
     for p in preds:
-        idx = np.argmax(p)
-        if idx < len(label_list):
-            pred_labels.append(label_list[idx])
-        else:
-            pred_labels.append("UNKNOWN")  # or skip
-        pred_probs.append(float(np.max(p)))  # 최대 확률 저장
+        if task_type == "binary":
+            prob = float(p[0])  # sigmoid 결과
+            label = label_list[1] if prob >= 0.5 else label_list[0]  # ['A', 'N'] 기준
+            pred_labels.append(label)
+            pred_probs.append(prob)
+        else:  # multi-class
+            idx = np.argmax(p)
+            pred_labels.append(label_list[idx] if idx < len(label_list) else "UNKNOWN")
+            pred_probs.append(float(np.max(p)))
 
     return pred_labels, pred_probs
+
 
 
 
@@ -107,16 +111,36 @@ def main():
     labels = CONFIG[mode]["label"]
     task_type = CONFIG[mode]["task_type"]
 
-        # ===== 예측 =====
+    # ===== 예측 =====
     print("🔍 예측 중...")
     pred_labels, pred_probs = predict_labels(model, x_data, task_type, labels)
     df["label"] = pred_labels
     df["probability"] = pred_probs
 
+    # ===== 결과 요약 출력 =====
+    print("\n📊 예측된 총 샘플 수:", len(df))
+    print("📁 예측된 라벨별 개수:")
+
+    from collections import Counter
+    label_counter = Counter(pred_labels)
+    sorted_labels = sorted(label_counter.items(), key=lambda x: (-x[1], x[0]))  # 개수 내림차순, 라벨 이름순
+
+    for label, count in sorted_labels:
+        if mode == "noise" and label == "N":
+            print(f"  - N: {count}개")
+            print(f"  - non-N: {len(df) - count}개")
+            break
+        else:
+            print(f"  - {label}: {count}개")
+
+    avg_conf = np.mean(pred_probs)
+    print(f"\n📈 평균 예측 확신도 (Confidence): {avg_conf:.4f}")
+
     # ===== 결과 저장 =====
     output_path = f"prediction_result_{mode}.xlsx"
-    df.to_excel(output_path, index=False, encoding='utf-8-sig', engine='openpyxl')
+    df.to_excel(output_path, index=False, engine='openpyxl')
     print(f"\n✅ 예측 완료! 결과 파일 저장됨: {output_path}")
+
 
 
 if __name__ == "__main__":
