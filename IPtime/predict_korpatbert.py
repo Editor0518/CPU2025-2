@@ -28,7 +28,7 @@ CONFIG = {
         "task_type": "binary"
     },
     "sub": {  # 소분류
-        "model_path": "korpatBERT_patent_model.h5",
+        "model_path": "korpatBERT_patent_model50.h5",
         "label": list_of_sub_labels,  # 소분류 라벨 리스트
         "task_type": "multi"
     },
@@ -98,7 +98,7 @@ def main():
         print("❌ 파일이 존재하지 않습니다.")
         return
 
-    df = pd.read_csv(file_path, encoding="cp949")
+    df = pd.read_csv(file_path)
     df["text"] = df["title"].fillna('') + " " + df["korean_summary"].fillna('')
     x_data = encode_texts(df["text"].tolist())
 
@@ -137,7 +137,7 @@ def main():
     print(f"\n📈 평균 예측 확신도 (Confidence): {avg_conf:.4f}")
 
     # ===== 결과 저장 =====
-    output_path = f"prediction_result_{mode}.xlsx"
+    output_path = f"prediction_result_{mode}2.xlsx"
     df.to_excel(output_path, index=False, engine='openpyxl')
     print(f"\n✅ 예측 완료! 결과 파일 저장됨: {output_path}")
 

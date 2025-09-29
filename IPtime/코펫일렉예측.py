@@ -11,13 +11,10 @@ from transformers import ElectraModel
 # ===== 기본 설정 =====
 BATCH_SIZE = 8
 
-list_of_sub_labels = [
-    'AAA', 'AAB', 'AAC',
-    'ABA', 'ABB', 'ABC',
-    'ACA', 'ACB', 'ACC',
-    'ADA', 'ADB', 'ADC', 'ADD',
-    'AEA', 'AEB', 'AEC', 'AED',
-    'N'
+list_of_sub_labels = ['ACB','AAC',
+    'AAA','ABB', 'AAB', 
+    'ABA',  'ABC',
+    'ACA',
 ]
 
 list_of_mid_labels = ['AA', 'AB', 'AC', 'AD', 'AE', 'N']
@@ -60,7 +57,6 @@ class ElectraClassifier(nn.Module):
         return self.classifier(cls_vector)
 
 
-
 # ===== 텍스트 인코딩 =====
 def encode_texts(texts):
     return tokenizer(
@@ -89,33 +85,27 @@ def predict_labels(model, inputs, label_list, batch_size=8, threshold=0.5):
             batch_attention_mask = attention_mask[i:i+batch_size].to(device)
 
             outputs = model(input_ids=batch_input_ids, attention_mask=batch_attention_mask)
-            logits = outputs  
+            logits = outputs
             probs = torch.softmax(logits, dim=1)
 
-             # 2진 분류인 경우 threshold 적용
+            # 2진 분류인 경우 threshold 적용
             if len(label_list) == 2:
-                # probs[:,0]은 non-N 확률
-                preds = (probs[:,0] >= threshold).long()
-                # preds==1이면 non-N, 0이면 N (이때 label_list 순서 맞춰야 함)
-                # 여기서 label_list 순서가 ['non-N', 'N']이라면,
-                # preds=1 → non-N (index 0), preds=0 → N (index 1) 이 아님
-                # preds = 1일 때 non-N으로 보고 싶다면
-                # preds = (probs[:,0] >= threshold).long() → True=1 이므로 non-N 인덱스 0과 안 맞음
-                # 그래서 아래처럼 인덱스 변환 필요
-                preds = torch.where(probs[:,0] >= threshold, torch.tensor(0), torch.tensor(1))
+                # 'non-N'의 확률을 기준으로 예측
+                preds = (probs[:, 0] >= threshold).long()
+                # preds==1이면 non-N, 0이면 N. label_list의 순서에 맞게 변환
+                # label_list가 ['non-N', 'N']이므로, preds=1이면 non-N(idx 0), preds=0이면 N(idx 1)
+                preds = torch.where(probs[:, 0] >= threshold, torch.tensor(0), torch.tensor(1))
             else:
                 max_probs, preds = torch.max(probs, dim=1)
 
             for pred_idx, prob in zip(preds.tolist(), probs.tolist()):
                 pred_labels.append(label_list[pred_idx])
-                # pred_probs는 해당 클래스 확률
                 pred_probs.append(prob[pred_idx])
 
-            torch.cuda.empty_cache()
+            if torch.cuda.is_available():
+                torch.cuda.empty_cache()
 
     return pred_labels, pred_probs
-
-
 
 
 # ===== 메인 흐름 =====
@@ -146,19 +136,27 @@ def main():
     texts = df["text"].tolist()
 
     print("📦 모델 로딩 중...")
-    # 추론 시 ElectraModel 로드 후 전달
+    
+    # === 수정된 부분: 선택에 따라 모델 경로와 레이블 수를 동적으로 설정 ===
+    model_config = CONFIG[mode]
+    num_labels = len(model_config["label"])
+    model_path = model_config["model_path"]
+
     base_model = ElectraModel.from_pretrained("monologg/koelectra-base-v3-discriminator")
-    model = ElectraClassifier(base_model, num_labels=len(CONFIG[mode]["label"]))
-    model.load_state_dict(torch.load(CONFIG[mode]["model_path"], map_location=device, weights_only=True))
+    model = ElectraClassifier(base_model, num_labels=num_labels)
+    
+    # weight_only=True 옵션은 PyTorch 2.0.1 이상에서만 사용 가능합니다.
+    # 버전이 낮다면, 이 부분을 삭제하거나 False로 설정하세요.
+    model.load_state_dict(torch.load(model_path, map_location=device))
+    
     model.to(device)
     model.eval()
-
 
     print("🧼 텍스트 인코딩 중...")
     inputs = encode_texts(texts)
 
     print("🔍 예측 중...")
-    pred_labels, pred_probs = predict_labels(model, inputs, CONFIG[mode]["label"], batch_size=BATCH_SIZE)
+    pred_labels, pred_probs = predict_labels(model, inputs, model_config["label"], batch_size=BATCH_SIZE)
 
     df["label"] = pred_labels
     df["probability"] = pred_probs
@@ -170,15 +168,14 @@ def main():
     label_counts = df["label"].value_counts()
     print("📁 예측된 라벨별 개수:")
     for label, count in label_counts.items():
-        print(f"  - {label}: {count}개")
+        print(f"  - {label}: {count}개")
 
     avg_prob = df["probability"].mean()
     print(f"\n📈 평균 예측 확신도 (Confidence): {avg_prob:.4f}")
 
-    output_path = f"prediction_result_el_{mode}100.xlsx"
+    output_path = f"prediction_result_el_{mode}.xlsx"
     df.to_excel(output_path, index=False, engine='openpyxl')
     print(f"\n✅ 예측 완료! 결과 파일 저장됨: {output_path}")
-
 
 
 if __name__ == "__main__":
